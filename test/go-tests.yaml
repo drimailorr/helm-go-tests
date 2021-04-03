@@ -33,6 +33,9 @@ metadata:
   namespace: go-tests
 spec:
   template:
+    metadata: 
+      labels: 
+        type: go-tests
     spec:
       serviceAccountName: go-tests-sa
       containers:
