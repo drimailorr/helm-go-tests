@@ -1,0 +1,2 @@
+containerImageRepo: nginx
+containerImageTag: v1.15.4

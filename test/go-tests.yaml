@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: go-tests
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: go-tests-sa
+  namespace: go-tests
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: go-tests-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: go-tests-sa
+  namespace: go-tests
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: go-tests
+  namespace: go-tests
+spec:
+  template:
+    spec:
+      serviceAccountName: go-tests-sa
+      containers:
+      - name: go-tests
+        image: go-tests:latest
+        imagePullPolicy: IfNotPresent
+        command: ["sh", "-c", "CGO_ENABLED=0 go test -v -tags helm"]
+      restartPolicy: Never
+  backoffLimit: 0
