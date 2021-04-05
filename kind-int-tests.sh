@@ -1,3 +1,4 @@
+
 kind delete clusters primary
 
 cat <<EOF | kind create cluster --wait 180s --name "primary" --config=-
@@ -10,6 +11,9 @@ networking:
 nodes:
 - role: control-plane
   image: kindest/node:v1.18.8
+  extraMounts:
+    - hostPath: ./test
+      containerPath: /tests
   kubeadmConfigPatches:
   - |
     kind: InitConfiguration
@@ -42,7 +46,7 @@ docker build --tag go-tests -f test/Dockerfile.test .
 
 # kind load dosen't recognize existing docker layers therefore very slow
 # This looks clunky atm until better UI implemented: https://kind.sigs.k8s.io/docs/user/local-registry/
-# TODO: hostPath volumes seem like a better way to decouple actual tests from docker image
+# hostPath volumes seem like a better way to decouple actual tests from docker image
 kind load docker-image go-tests --name primary
 
 kubectl delete job go-tests --namespace go-tests
@@ -51,4 +55,4 @@ kubectl apply -f test/go-tests.yaml --namespace go-tests
 
 kubectl wait --namespace go-tests --for=condition=complete job/go-tests --timeout=300s
 
-kubectl --namespace go-tests logs -l type=go-tests --tail=1500
+kubectl --namespace go-tests logs -l type=go-tests --tail=1500 -f
